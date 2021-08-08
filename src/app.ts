@@ -36,7 +36,8 @@ app.use(cors());
 app.options('/', cors());
 app.use(morgan('combined', { stream }));
 
-app.use('/v1', router);
+app.use('/', router);
+
 
 
 export default app;

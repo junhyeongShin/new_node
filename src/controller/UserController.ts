@@ -80,22 +80,19 @@ userController.get('/all', async (req, res) => {
   
   // 201(작성됨): 성공적으로 요청되었으며 서버가 새 리소스를 작성했다.
   console.log(user_);
-  res.status(201).json();
+  res.status(201).json(user_);
 
 
 });
 
 // 특정 유저 업데이트
-userController.put('/upMany', async (req, res) => {
+userController.put('/up', async (req, res) => {
 
   var user_
   
   console.log(req.body._id);
   try{
-    user_ = await user.updateMany(
-      {
-        name:"test"
-      },
+    user_ = await user.updateOne(
       {
         "phone":'00000000000'
       }
@@ -116,7 +113,7 @@ userController.put('/upMany', async (req, res) => {
   
   // 201(작성됨): 성공적으로 요청되었으며 서버가 새 리소스를 작성했다.
   console.log(user_);
-  res.status(201).json();
+  res.status(201).json(user_);
 
 
 });

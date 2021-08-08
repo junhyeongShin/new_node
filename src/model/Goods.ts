@@ -24,7 +24,7 @@ interface IGoods extends mongoose.Document {
     sell_place: string, //판매 지역
     bill_availability: string, //영수증 발행가능 여부
     etc_trading: string, //기타 거래 조건
-    create_time: Date, // 상품 등록 일시
+    create_at: Date, // 상품 등록 일시
     end_time: Date, // 판매 종료 일시
     destroy_time: Date, // 판매 삭제 일시
     catogory_main  : string, // 메인 카테고리
@@ -44,27 +44,21 @@ const option = new Schema({
 })
 
 const goodsSchema = new Schema({
-  seller_index: { type: Object, required: true }, // 판매자
+  seller_index: { type: String, required: true}, // 판매자
   name: { type: String, required: true }, // 이름
   price: { type: Number, required: true },  // 가격
-  add_point:{ type: Number, default: 0 }, // 적립 포잍느
-  views:{ type: Number, default: 0 }, //조회수
-  representative_img: { type: String, default: '' }, // 대표 이미지
-  goods_explanation:{ type: String, required: true}, // 상품 설명
   catogory_main:{ type: String, required: true}, // 카테고리 메인
   catogory_sub:{ type: String, required: true}, // 카테고리 서브
-  create_time: { type: Date, default: dayjs().toDate() },
+  create_at: { type: Date, default: dayjs().toDate() },
   option: { type: option }
 })
 
-export const _PATTERN = {
-  PHONE: Joi.string().min(8).max(15).required(),
-  NAME: Joi.string().min(6).max(30).required(),
-  EMAIL: Joi.string().email().required(),
-  AKA_NAME: Joi.string().required(),
-  JOIN_TIME: Joi.date(),
+export const GOODS_PATTERN = {
+  PRICE: Joi.number().min(1).max(1000000000).required(),
+  NAME: Joi.string().min(2).max(30).required(),
+  CREATE_AT: Joi.date(),
   INDEX : Joi.object().required(),
-  ADDRESS : Joi.object()
+  OPTION : Joi.object()
 }
 
 
