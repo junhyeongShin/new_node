@@ -1,42 +1,167 @@
 import express from 'express';
-import joi from 'joi';
-import { user } from '../model/User';
-import moment from 'moment';
-import { logger } from 'src/winston';
-
-
-
+import Joi from 'joi';
+import { user, USER_PATTERN } from '../model/User';
+import dayjs from 'dayjs';
 
 export const userController = express.Router();
 
-// 접속 테스용
-userController.get('/test', async (req, res) => {
-  res.status(200).json()
-})
 
-// 회원 가입시 중복 확인
-userController.get('/doubleCheck', async (req, res) => {
-  // const user = await User.findOne(req.session.user_id);
-  // if (!user) {
-  //     res.status(404).end();
-  // }
-  // return res.json(user).end();
-})
+// 유저 생성 포스트
+userController.post('/', async (req, res) => {
 
+  var address_number = req.body.address.address_number;
+  var address_detail = req.body.address.address_detail;
+  var address_name = req.body.address.address_name;
 
-userController.post('/signUp', (req, res) => {
-
-  var user_ = new user
-  user_ = req.body;
   
-  console.log(req.body);
+  var user_ = new user({
+    "name":req.body.name,
+    "aka_name":req.body.aka_name,
+    "phone":req.body.phone,
+    "email":req.body.email,
+    "join_time":dayjs().toDate(),
+    "address" : {
+      "address_number": address_number,
+      "address_detail": address_detail,
+      "address_name": address_name
+    }
+  });
 
-  res.status(200).json()
-  // user.save({ name: req.body.name }, (err, result) => {
-  //   if (err) {
-  //     return logger.error(err);
-  //   }
-  //   res.json(result);
-  // });
+  const checkUserSchema = Joi.object({
+    "name" : USER_PATTERN.NAME,
+    "aka_name" : USER_PATTERN.AKA_NAME,
+    "phone" : USER_PATTERN.PHONE,
+    "email" : USER_PATTERN.EMAIL,
+    "join_time" : USER_PATTERN.JOIN_TIME,
+    "_id" : USER_PATTERN.INDEX,
+    "address" : USER_PATTERN.ADDRESS
+  })
+
+  
+  try{
+    await checkUserSchema.validateAsync(user_.toObject());
+    
+    await user_.save();
+  }
+  catch (error) {
+    console.error(error)
+    // 400(잘못된 요청): 서버가 요청의 구문을 인식하지 못했다.
+    res.status(400).json();
+  }
+  
+  // 201(작성됨): 성공적으로 요청되었으며 서버가 새 리소스를 작성했다.
+  res.status(201).json();
+
+
+});
+
+//모든 유저 조회
+userController.get('/all', async (req, res) => {
+
+  var user_
+  
+  try{
+    user_ = await user.aggregate(
+      [
+        {
+          $match: {
+            name:{$regex: ""}
+          }
+        }
+      ]
+      )
+    console.log(user)
+  }
+  catch (error) {
+    console.error(error)
+    // 400(잘못된 요청): 서버가 요청의 구문을 인식하지 못했다.
+    res.status(400).json();
+  }
+  
+  // 201(작성됨): 성공적으로 요청되었으며 서버가 새 리소스를 작성했다.
+  console.log(user_);
+  res.status(201).json();
+
+
+});
+
+// 특정 유저 업데이트
+userController.put('/upMany', async (req, res) => {
+
+  var user_
+  
+  console.log(req.body._id);
+  try{
+    user_ = await user.updateMany(
+      {
+        name:"test"
+      },
+      {
+        "phone":'00000000000'
+      }
+      );
+
+      if(user_==null){
+        console.log("유저 컨트롤러 : 특정 회원을 찾지 못하였습니다. : ",req.body._id)
+        res.status(400).json();
+        return;
+      }
+    
+  }
+  catch (error) {
+    console.error(error)
+    // 400(잘못된 요청): 서버가 요청의 구문을 인식하지 못했다.
+    res.status(400).json();
+  }
+  
+  // 201(작성됨): 성공적으로 요청되었으며 서버가 새 리소스를 작성했다.
+  console.log(user_);
+  res.status(201).json();
+
+
+});
+
+//특정 유저 조회
+userController.get('/one', async (req, res) => {
+
+  var user_
+  
+  console.log(req.body._id);
+  try{
+    user_ = await user.findById(req.body._id);
+
+  }
+  catch (error) {
+    console.error(error)
+    // 400(잘못된 요청): 서버가 요청의 구문을 인식하지 못했다.
+    res.status(400).json();
+  }
+  
+  // 201(작성됨): 성공적으로 요청되었으며 서버가 새 리소스를 작성했다.
+  console.log(user_);
+  res.status(201).json();
+
+
+});
+
+// 특정 유저 삭제
+userController.delete('/del', async (req, res) => {
+
+  var user_
+  
+  console.log(req.body._id);
+  try{
+    user_ = await user.deleteOne({_id:req.body._id});
+  }
+  catch (error) {
+    console.error(error)
+    // 400(잘못된 요청): 서버가 요청의 구문을 인식하지 못했다.
+    res.status(400).json();
+  }
+  
+  // 201(작성됨): 성공적으로 요청되었으며 서버가 새 리소스를 작성했다.
+  console.log(user_);
+  res.status(201).json();
+
 
 });

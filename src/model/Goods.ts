@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
-import moment from 'moment';
+import Joi from 'joi';
+import dayjs from 'dayjs';
+
 
 const Schema = mongoose.Schema;
 
 interface IGoods extends mongoose.Document {
-    index : mongoose.Types.ObjectId, //상품 인덱스
     seller_index : mongoose.Types.ObjectId, //상품 판매자 인덱스
     goods_number: number, // 상품 번호
     name: string, // 상품 이름
@@ -26,8 +27,8 @@ interface IGoods extends mongoose.Document {
     create_time: Date, // 상품 등록 일시
     end_time: Date, // 판매 종료 일시
     destroy_time: Date, // 판매 삭제 일시
-    catogory_main  : number, // 메인 카테고리
-    catogory_sub  : number, // 서브 카테고리
+    catogory_main  : string, // 메인 카테고리
+    catogory_sub  : string, // 서브 카테고리
     views  : number, // 조회수
     option : [
       {
@@ -43,18 +44,28 @@ const option = new Schema({
 })
 
 const goodsSchema = new Schema({
-  email: { type: String, required: true },
-  name: { type: String, required: true },
-  aka_name: { type: String, required: true }, 
-  profile_img: { type: String, default: '' },
-  point:{ type: Number, default: 0 },
-  email_agree:{ type: Boolean, required: true, default: false }, //수신동의
-  SMS_agree:{ type: Boolean, required: true, default: false }, //수신동의
-  info_open_agree:{ type: Boolean, required: true, default: false }, //수신동의
-  phone: { type: String, required: true, default: '' },
-  join_time: { type: Date, default: moment().toDate() },
-  rest_time: { type: Date, default: moment().add(1, 'years')},
+  seller_index: { type: Object, required: true }, // 판매자
+  name: { type: String, required: true }, // 이름
+  price: { type: Number, required: true },  // 가격
+  add_point:{ type: Number, default: 0 }, // 적립 포잍느
+  views:{ type: Number, default: 0 }, //조회수
+  representative_img: { type: String, default: '' }, // 대표 이미지
+  goods_explanation:{ type: String, required: true}, // 상품 설명
+  catogory_main:{ type: String, required: true}, // 카테고리 메인
+  catogory_sub:{ type: String, required: true}, // 카테고리 서브
+  create_time: { type: Date, default: dayjs().toDate() },
   option: { type: option }
 })
+
+export const _PATTERN = {
+  PHONE: Joi.string().min(8).max(15).required(),
+  NAME: Joi.string().min(6).max(30).required(),
+  EMAIL: Joi.string().email().required(),
+  AKA_NAME: Joi.string().required(),
+  JOIN_TIME: Joi.date(),
+  INDEX : Joi.object().required(),
+  ADDRESS : Joi.object()
+}
+
 
 export const Goods = mongoose.model<IGoods>('goods', goodsSchema, 'goods');
